@@ -32,9 +32,10 @@ shinyUI(
                             dependent variable (Y Variable) from drop-down menu. By default all other remaining variables will be selected as explanatory variables (X variables). 
                               If you want to drop any variable from explanatory variables, just uncheck that variable and it will be dropped from the model.
                             ",align="justify"),
+                             p('You can also adjust the complexity parameter in regression tree model. Default value of complexity parameter is "0.01".'),
                              br(),
                              h4(p("Download Sample Input File")),
-                             br(),
+                             # br(),
                              downloadButton('downloadData', 'Download Example file'),
                              br(),
                              br(),

@@ -5,6 +5,7 @@ library(shiny)
 library(rpart)
 library(pastecs)
 library(dplyr)
+library(Hmisc)
 
 shinyServer(function(input, output,session) {
   
