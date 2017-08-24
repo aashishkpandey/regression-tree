@@ -134,6 +134,18 @@ shinyServer(function(input, output,session) {
     
   })
   
+  output$plot3 = renderPlot({
+    
+    title1 = paste("Decision Tree for", input$yAttr)
+    
+  post(fit.rt(), 
+       # file = "tree2.ps", 
+       filename = "",   # will print to console
+       use.n = TRUE,
+       compress = TRUE,
+       title = title1) 
+  })
+  
   
   #------------------------------------------------#
   nodes1 =  reactive({
@@ -150,13 +162,56 @@ shinyServer(function(input, output,session) {
     node_num[i1] = a0[a2[i1]]
   }
   
-  tree_nodes1 <- fit.rt()$where %>% as.data.frame() %>% cbind(node_num) %>% select(node_num)
+  tree_nodes1 <- fit.rt()$where %>% as.data.frame() %>% cbind(node_num) %>% dplyr::select("node_num")
   tree_nodes1
+  
   })
 
-  output$nodes = renderPrint({
-    nodes1()
+  output$nodesout = renderPrint({
+    head(nodes1(),15)
   })
+  
+  
+  randomforest = reactive({
+    
+    trainSet <- Dataset()
+    x = setdiff(colnames(Dataset()), input$Attr)
+    y = input$yAttr
+    
+    set.seed(23)
+    t = Sys.time()
+    forest.surive <- randomForest(as.formula(paste(y, paste( x, collapse = ' + '), sep=" ~ ")), 
+                                  data = trainSet, 
+                                  mtry = 4, 
+                                  importance = TRUE, 
+                                  ntree = 5000)    
+    
+  })
+  
+  output$rfimp = renderPrint({
+    importance(randomforest(), type=1)  
+  })
+  
+  
+  #Following evaluates to 33.02. Checking training set includes same rows. 
+  # mean(mTitanicAll[trainSet, "fare"])
+  # 
+  # set.seed(23)
+  
+  # survive.Predict <- predict(forest.surive, type = "class",
+  #                            newdata = mTitanicAll[-trainSet,])
+  
+  
+  
+  # a0 = round(survive.Predict)
+  # tab = table(a0, mTitanicAll[-trainSet, "survived"])
+  # (tab[1] + tab[4]) / sum(tab)  #80.86% whereas simple d-tree gave 82.29%
+  
+  # alternatively and more flexibly (since 48% could also be "1" and not "0")
+  # a01 = sapply(survive.Predict, function(x) ifelse(x >= 0.48, 1, 0))
+  # tab = table(a01, mTitanicAll[-trainSet, "survived"])
+  # (tab[1] + tab[4]) / sum(tab)  # 81.33% now, up from 80.86%
+  
   #------------------------------------------------#
   output$downloadData <- downloadHandler(
     filename = function() { "beer data.csv" },
@@ -164,4 +219,5 @@ shinyServer(function(input, output,session) {
       write.csv(read.csv("data/beer data.csv"), file, row.names=F, col.names=F)
     }
   )
+  
   })

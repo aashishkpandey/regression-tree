@@ -2,6 +2,7 @@
 #           Regression Tree App (ui)                #
 ###########################################################
 library("shiny")
+library("randomForest")
 
 shinyUI(
   fluidPage(
@@ -13,7 +14,8 @@ shinyUI(
       sidebarPanel(
         # Upload data:
         h4(p(" Data Input")),
-        fileInput("file", "Upload data in csv"),
+        fileInput("file", "Upload Model Training data in csv"),
+        fileInput("filep", "Upload Prediction data in csv"),
         # h4(p("Select Response Variable")),
         sliderInput('cp','Complexity Parameter',0,1,0.01),
         htmlOutput("yvarselect"),
@@ -50,12 +52,17 @@ shinyUI(
                              verbatimTextOutput('imp'),
                             h4('Detailed summary of splits'),
                             verbatimTextOutput("summary")),
-                    tabPanel("Plot Output",
-                             h4('Visualize cross-validation results'),
-                             plotOutput("plot1",height = 600, width = 850),
-                             h4('Regression Tree'),
+                    tabPanel("Regression Tree",
+                             # h4('Visualize cross-validation results'),
+                             # plotOutput("plot1",height = 600, width = 850),
+                             # h4('Regression Tree'),
                              plotOutput("plot2",height = 600, width = 850),
-                             verbatimTextOutput('nodes'))
+                             verbatimTextOutput("nodesout")),
+                    tabPanel("Nodes Tree",
+                             plotOutput("plot3",height = 600, width = 850)
+                             ),
+                    tabPanel("Random Forest",verbatimTextOutput('rfimp')),
+                    tabPanel("Prediction")
                              
         ) # end of tabsetPanel
       )# end of main panel
