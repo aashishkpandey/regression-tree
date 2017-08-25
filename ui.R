@@ -15,12 +15,13 @@ shinyUI(
         # Upload data:
         h4(p(" Data Input")),
         fileInput("file", "Upload Model Training data in csv"),
-        fileInput("filep", "Upload Prediction data in csv"),
+        sliderInput('sample','Validation Sample Proportion',10,50,30),
         # h4(p("Select Response Variable")),
         sliderInput('cp','Complexity Parameter',0,1,0.01),
+        fileInput("filep", "Upload Prediction data in csv"),
         htmlOutput("yvarselect"),
-        htmlOutput("xvarselect")
-        
+        htmlOutput("xvarselect"),
+        htmlOutput("fxvarselect")
       ),   # end of sidebar panel
       
     mainPanel(
@@ -47,21 +48,23 @@ shinyUI(
                     tabPanel("Data Summary",verbatimTextOutput('summarydata')),
                     tabPanel("Model Output",
                              h4('Results'),
+                             verbatimTextOutput("validation"),
                              verbatimTextOutput("results"),
                              h4('Variable importance'),
                              verbatimTextOutput('imp'),
                             h4('Detailed summary of splits'),
                             verbatimTextOutput("summary")),
-                    tabPanel("Regression Tree",
+                    tabPanel("Decision Tree",
                              # h4('Visualize cross-validation results'),
                              # plotOutput("plot1",height = 600, width = 850),
                              # h4('Regression Tree'),
+                             plotOutput("plot3",height = 600, width = 850)),
+                    tabPanel("Node labels",
                              plotOutput("plot2",height = 600, width = 850),
-                             verbatimTextOutput("nodesout")),
-                    tabPanel("Nodes Tree",
-                             plotOutput("plot3",height = 600, width = 850)
+                             verbatimTextOutput("nodesout")
+                             
                              ),
-                    tabPanel("Random Forest",verbatimTextOutput('rfimp')),
+                    # tabPanel("Random Forest",verbatimTextOutput('rfimp')),
                     tabPanel("Prediction")
                              
         ) # end of tabsetPanel

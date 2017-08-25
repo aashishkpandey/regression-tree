@@ -6,6 +6,7 @@ library(rpart)
 library(pastecs)
 library(dplyr)
 library(Hmisc)
+# library("hydroGOF")
 
 shinyServer(function(input, output,session) {
   
@@ -35,12 +36,33 @@ shinyServer(function(input, output,session) {
                        setdiff(colnames(readdata()),input$yAttr), setdiff(colnames(readdata()),input$yAttr))
     
   })
+
+  readdata.temp = reactive({
+    mydata = readdata()[,c(input$yAttr,input$xAttr)]
+  })
+
+    
+  output$fxvarselect <- renderUI({
+    if (identical(readdata.temp(), '') || identical(readdata.temp(),data.frame())) return(NULL)
+    
+    checkboxGroupInput("fxAttr", "Select factor variable in Data set",
+                       colnames(readdata.temp()) )
+    
+  })
+  
   
   Dataset = reactive({
     mydata = readdata()[,c(input$yAttr,input$xAttr)]
+    
+    if (length(input$fxAttr) >= 1){
+      for (j in 1:length(input$fxAttr)){
+        mydata[,input$fxAttr[j]] = as.factor(mydata[,input$fxAttr[j]])
+      }
+    }
     return(mydata)
     
-    })
+  })
+  
   #------------------------------------------------#
   
   out = reactive({
@@ -58,7 +80,7 @@ shinyServer(function(input, output,session) {
     fa = which(Class %in% c("factor","character"))
     nu.data = data[,nu] 
     fa.data = data[,fa] 
-    Summary = list(Numeric.data = round(stat.desc(nu.data) ,4), factor.data = describe(fa.data))
+    Summary = list(Numeric.data = round(stat.desc(nu.data)[c(4,5,6,8,9,12,13),] ,4), factor.data = describe(fa.data))
     
     a = seq(from = 0, to=200,by = 4)
     j = length(which(a < ncol(nu.data)))
@@ -73,6 +95,20 @@ shinyServer(function(input, output,session) {
     }
   })
   
+  testsample =  reactive({
+  set.seed(5898)
+  sample(1:nrow(Dataset()), round(nrow(Dataset())*((input$sample)/100)))
+         })
+
+  train_data = reactive({
+      Dataset()[-testsample(),]
+  })
+  
+  test_data = reactive({
+    Dataset()[testsample(),]
+  })
+  
+  
   #------------------------------------------------#
   fit.rt = reactive({
   if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
@@ -81,18 +117,46 @@ shinyServer(function(input, output,session) {
   y = input$yAttr
   # formula1 = 
   
+  if (class(train_data()[,c(input$yAttr)]) == "factor"){
   fit.rt <- rpart(as.formula(paste(y, paste( x, collapse = ' + '), sep=" ~ ")),
                   cp = input$cp,
-                  # method="anova",   # use "class" for classification trees
-                data=Dataset())
-    })
+                  method="class",   # use "class" for classification trees
+                data=train_data())
+  # val = stats::predict(fit.rt, newdata = test_data(),type="class")
+  } else {
+  fit.rt <- rpart(as.formula(paste(y, paste( x, collapse = ' + '), sep=" ~ ")),
+                  cp = input$cp,
+                  method="anova",   # use "class" for classification trees
+                  data=train_data())
   
+  # val = stats::predict(fit.rt, newdata = test_data())
+  }
+  
+  fit.rt
+  # out = list(model = , validation = val)
+    })
+
+  # val =  reactive({
+  # 
+  #   if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
+  # 
+  # 
+  # 
+  #   val
+  # 
+  # })
+  # 
+  # output$validation = renderPrint({
+  #   
+  #   fit.rt()
+  # })
+
   
   #------------------------------------------------#
   output$results = renderPrint({
     if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
     
-    printcp(fit.rt()) # display the results
+     printcp(fit.rt()) # display the results
     # formula.mod()
   })
   
@@ -119,7 +183,7 @@ shinyServer(function(input, output,session) {
   #------------------------------------------------#
   output$plot2 = renderPlot({
     
-    title1 = paste("Regression Tree for", input$yAttr)
+    title1 = paste("Decision Tree for", input$yAttr)
     
     fit.rt1 = fit.rt()
     fit.rt1$frame$yval = as.numeric(rownames(fit.rt()$frame))
@@ -136,7 +200,7 @@ shinyServer(function(input, output,session) {
   
   output$plot3 = renderPlot({
     
-    title1 = paste("Decision Tree for", input$yAttr)
+    title1 = paste("Decision nodes for", input$yAttr)
     
   post(fit.rt(), 
        # file = "tree2.ps", 
@@ -162,7 +226,8 @@ shinyServer(function(input, output,session) {
     node_num[i1] = a0[a2[i1]]
   }
   
-  tree_nodes1 <- fit.rt()$where %>% as.data.frame() %>% cbind(node_num) %>% dplyr::select("node_num")
+  tree_nodes1 <- fit.rt()$where %>% as.data.frame() %>% 
+  cbind(node_num) %>% dplyr::select("node_num")
   tree_nodes1
   
   })
@@ -172,25 +237,25 @@ shinyServer(function(input, output,session) {
   })
   
   
-  randomforest = reactive({
-    
-    trainSet <- Dataset()
-    x = setdiff(colnames(Dataset()), input$Attr)
-    y = input$yAttr
-    
-    set.seed(23)
-    t = Sys.time()
-    forest.surive <- randomForest(as.formula(paste(y, paste( x, collapse = ' + '), sep=" ~ ")), 
-                                  data = trainSet, 
-                                  mtry = 4, 
-                                  importance = TRUE, 
-                                  ntree = 5000)    
-    
-  })
-  
-  output$rfimp = renderPrint({
-    importance(randomforest(), type=1)  
-  })
+  # randomforest = reactive({
+  #   
+  #   trainSet <- Dataset()
+  #   x = setdiff(colnames(Dataset()), input$Attr)
+  #   y = input$yAttr
+  #   
+  #   set.seed(23)
+  #   t = Sys.time()
+  #   forest.surive <- randomForest(as.formula(paste(y, paste( x, collapse = ' + '), sep=" ~ ")), 
+  #                                 data = trainSet, 
+  #                                 mtry = 4, 
+  #                                 importance = TRUE, 
+  #                                 ntree = 5000)    
+  #   
+  # })
+  # 
+  # output$rfimp = renderPrint({
+  #   importance(randomforest(), type=1)  
+  # })
   
   
   #Following evaluates to 33.02. Checking training set includes same rows. 
