@@ -302,9 +302,9 @@ shinyServer(function(input, output,session) {
     
   })
   
-  # output$prediction =  renderPrint({
-  #   prediction()
-  # })
+  output$prediction =  renderPrint({
+    head(prediction())
+  })
   #------------------------------------------------#
   output$downloadData1 <- downloadHandler(
     filename = function() { "Predicted Data.csv" },

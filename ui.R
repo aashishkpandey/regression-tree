@@ -64,10 +64,12 @@ shinyUI(
                              plotOutput("plot2",height = 600, width = 850),
                              h4("First 15 rows node number from model training data"),
                              verbatimTextOutput("nodesout")
-                             
                              ),
                     # tabPanel("Random Forest",verbatimTextOutput('rfimp')),
                     tabPanel("Prediction",br(),
+                             h4("First few rows of predicted data"),
+                             p('Yhat column is the predicted value.'),
+                             verbatimTextOutput('prediction'),
                              downloadButton('downloadData1', 'Download Predicted data (Works only in browser)')
                              )
                              
