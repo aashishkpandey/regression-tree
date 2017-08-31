@@ -35,7 +35,7 @@ shinyUI(
                             dependent variable (Y Variable) from drop-down menu. By default all other remaining variables will be selected as explanatory variables (X variables). 
                               If you want to drop any variable from explanatory variables, just uncheck that variable and it will be dropped from the model.
                             ",align="justify"),
-                             p('You can also adjust the complexity parameter in regression tree model. Default value of complexity parameter is "0.01".'),
+                             p('You can also adjust the complexity parameter in regression tree model. Default value of complexity parameter is "0.01". You can adjust the validation sample proportion from the slider in left sidebar panel. Validation sample will be selected from the input data set. If you have a similar data set on which you want to make the prediction based on regression tree, You can upload that data set in left side bar panel. Please note that prediction data should have all explanatory variables similar to model data.',align="justify"),
                              br(),
                              h4(p("Download Sample Input File")),
                              # br(),
@@ -47,8 +47,9 @@ shinyUI(
                              ),
                     tabPanel("Data Summary",verbatimTextOutput('summarydata')),
                     tabPanel("Model Output",
-                             h4('Results'),
+                             h4('Validation Result Summary'),
                              verbatimTextOutput("validation"),
+                             h4('Model Result Summary'),
                              verbatimTextOutput("results"),
                              h4('Variable importance'),
                              verbatimTextOutput('imp'),
@@ -61,11 +62,14 @@ shinyUI(
                              plotOutput("plot3",height = 600, width = 850)),
                     tabPanel("Node labels",
                              plotOutput("plot2",height = 600, width = 850),
+                             h4("First 15 rows node number from model training data"),
                              verbatimTextOutput("nodesout")
                              
                              ),
                     # tabPanel("Random Forest",verbatimTextOutput('rfimp')),
-                    tabPanel("Prediction")
+                    tabPanel("Prediction",br(),
+                             downloadButton('downloadData1', 'Download Predicted data (Works only in browser)')
+                             )
                              
         ) # end of tabsetPanel
       )# end of main panel
