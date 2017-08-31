@@ -122,41 +122,37 @@ shinyServer(function(input, output,session) {
                   cp = input$cp,
                   method="class",   # use "class" for classification trees
                 data=train_data())
-  # val = stats::predict(fit.rt, newdata = test_data(),type="class")
+   val = stats::predict(fit.rt, newdata = test_data(),type="class")
   } else {
   fit.rt <- rpart(as.formula(paste(y, paste( x, collapse = ' + '), sep=" ~ ")),
                   cp = input$cp,
                   method="anova",   # use "class" for classification trees
                   data=train_data())
   
-  # val = stats::predict(fit.rt, newdata = test_data())
+   val = stats::predict(fit.rt, newdata = test_data())
   }
   
-  fit.rt
-  # out = list(model = , validation = val)
+  
+  out = list(model = fit.rt, validation = val)
     })
 
   # val =  reactive({
   # 
   #   if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
   # 
-  # 
-  # 
-  #   val
-  # 
   # })
-  # 
-  # output$validation = renderPrint({
-  #   
-  #   fit.rt()
-  # })
+
+  output$validation = renderPrint({
+
+    fit.rt()$validation
+  })
 
   
   #------------------------------------------------#
   output$results = renderPrint({
     if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
     
-     printcp(fit.rt()) # display the results
+     printcp(fit.rt()$model) # display the results
     # formula.mod()
   })
   
@@ -164,19 +160,19 @@ shinyServer(function(input, output,session) {
   #------------------------------------------------#
   output$summary = renderPrint({
     if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
-    summary(fit.rt()) # detailed summary of splits  
+    summary(fit.rt()$model) # detailed summary of splits  
   })
   
   
   #------------------------------------------------#
   output$imp = renderPrint({
-    round(fit.rt()$variable.importance/sum(fit.rt()$variable.importance),2)  
+    round(fit.rt()$model$variable.importance/sum(fit.rt$model()$variable.importance),2)  
   })
   
   
   #------------------------------------------------#
   output$plot1 = renderPlot({
-    plotcp(fit.rt()) # visualize cross-validation results   
+    plotcp(fit.rt()$model) # visualize cross-validation results   
   })
   
   
@@ -185,8 +181,8 @@ shinyServer(function(input, output,session) {
     
     title1 = paste("Decision Tree for", input$yAttr)
     
-    fit.rt1 = fit.rt()
-    fit.rt1$frame$yval = as.numeric(rownames(fit.rt()$frame))
+    fit.rt1 = fit.rt()$model
+    fit.rt1$frame$yval = as.numeric(rownames(fit.rt()$model$frame))
     
     # create attractive postcript plot of tree 
     post(fit.rt1, 
@@ -202,7 +198,7 @@ shinyServer(function(input, output,session) {
     
     title1 = paste("Decision nodes for", input$yAttr)
     
-  post(fit.rt(), 
+  post(fit.rt()$model, 
        # file = "tree2.ps", 
        filename = "",   # will print to console
        use.n = TRUE,
@@ -214,19 +210,19 @@ shinyServer(function(input, output,session) {
   #------------------------------------------------#
   nodes1 =  reactive({
     
-  tree_nodes = as.data.frame(fit.rt()$where)
+  tree_nodes = as.data.frame(fit.rt()$model$where)
   colnames(tree_nodes) <- "node_number"
   # tree_nodes %>% head()
     
-  a0 = as.numeric(rownames(fit.rt()$frame)); a0
-  a1 = seq(1:nrow(fit.rt()$frame)); a1 
-  a2 = as.vector(fit.rt()$where)
+  a0 = as.numeric(rownames(fit.rt()$model$frame)); a0
+  a1 = seq(1:nrow(fit.rt()$model$frame)); a1 
+  a2 = as.vector(fit.rt()$model$where)
   node_num = a2
   for (i1 in 1:nrow(tree_nodes)){
     node_num[i1] = a0[a2[i1]]
   }
   
-  tree_nodes1 <- fit.rt()$where %>% as.data.frame() %>% 
+  tree_nodes1 <- fit.rt()$model$where %>% as.data.frame() %>% 
   cbind(node_num) %>% dplyr::select("node_num")
   tree_nodes1
   
