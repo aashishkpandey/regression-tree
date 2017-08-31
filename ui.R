@@ -67,8 +67,8 @@ shinyUI(
                              ),
                     # tabPanel("Random Forest",verbatimTextOutput('rfimp')),
                     tabPanel("Prediction",br(),
-                             h4("First few rows of predicted data"),
-                             p('Yhat column is the predicted value.'),
+                             h4("First 10 rows of predicted data"),
+                             p('"Yhat" column is the predicted value.'),
                              verbatimTextOutput('prediction'),
                              downloadButton('downloadData1', 'Download Predicted data (Works only in browser)')
                              )
