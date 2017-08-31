@@ -1,4 +1,4 @@
-week serial number,SKU serial number,brand names of beers,SKU size in fluid ounces,whether bottle or can,Whether Light colored beer,Whether Amber colored beer,Whether Golden colored beer,Whether low calorie beer,Whether regular beer,ad spend in $000,Price in $ per oz,Weighted distribution,Weighted Promotional activities, volume sold in that week,month number 1 to 12
+week_num,sku_num,beer_brand,sku_size_oz,bottle,light_color,amber_color,golden_color,lite_beer,regular_beer,ad_spend,price_per_oz,beer_distbn,promo,beer_sales_vol,month
 1,1,Amstel,144,0,0,1,0,1,0,14758.00001,0.097976394,0.509090909,8.999999997,7200,1
 2,1,Amstel,144,0,0,1,0,1,0,14758.00001,0.098325912,0.418181818,18.39000001,6624,1
 4,1,Amstel,144,0,0,1,0,1,0,14758.00001,0.098282915,0.454545455,16.09,7631.999999,1
