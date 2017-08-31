@@ -7,6 +7,8 @@ library(pastecs)
 library(dplyr)
 library(Hmisc)
 library("hydroGOF")
+require(party)
+require(partykit)
 
 shinyServer(function(input, output,session) {
   
