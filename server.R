@@ -227,7 +227,7 @@ shinyServer(function(input, output,session) {
   output$plot2 = renderPlot({
     if (is.null(input$file)) {return(NULL)}
     
-    title1 = paste("Decision Tree for", input$yAttr)
+    title1 = paste("Decision Nodes for", input$yAttr)
     
     fit.rt1 = fit.rt()$model
     fit.rt1$frame$yval = as.numeric(rownames(fit.rt()$model$frame))
@@ -245,7 +245,7 @@ shinyServer(function(input, output,session) {
   output$plot3 = renderPlot({
     if (is.null(input$file)) {return(NULL)}
     
-    title1 = paste("Decision nodes for", input$yAttr)
+    title1 = paste("Decision Tree for", input$yAttr)
     
   post(fit.rt()$model, 
        # file = "tree2.ps", 
@@ -281,6 +281,14 @@ shinyServer(function(input, output,session) {
     head(nodes1(),15)
   })
   
+  output$downloadData3 <- downloadHandler(
+    filename = function() { "Nodes Info.csv" },
+    content = function(file) {
+      if (identical(Dataset(), '') || identical(Dataset(),data.frame())) return(NULL)
+      dft = data.frame(row_numer = row.names(nodes1()), nodes1())
+      write.csv(dft, file, row.names=F, col.names=F)
+    }
+  )
   
   prediction = reactive({
     if (class(train_data()[,c(input$yAttr)]) == "factor"){
@@ -306,6 +314,7 @@ shinyServer(function(input, output,session) {
     if (is.null(input$filep)) {return(NULL)}
     head(prediction(),10)
   })
+  
   #------------------------------------------------#
   output$downloadData1 <- downloadHandler(
     filename = function() { "Predicted Data.csv" },
@@ -318,6 +327,13 @@ shinyServer(function(input, output,session) {
     filename = function() { "beer data.csv" },
     content = function(file) {
       write.csv(read.csv("data/beer data.csv"), file, row.names=F, col.names=F)
+    }
+  )
+  
+  output$downloadData2 <- downloadHandler(
+    filename = function() { "beer data - prediction sample.csv" },
+    content = function(file) {
+      write.csv(read.csv("data/beer data - prediction sample.csv"), file, row.names=F, col.names=F)
     }
   )
   
